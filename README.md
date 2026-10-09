@@ -1,7 +1,7 @@
 # SakayKita 🚍
 
 **An offline, on-device AI commute companion for blind and low-vision Filipino commuters.**
-ParaPo watches the street, reads the route signboards of approaching jeepneys, and tells you out loud which one is yours. On board, it buzzes when you're near your stop. It all runs on your phone, with no internet needed.
+SakayKita watches the street, reads the route signboards of approaching jeepneys, and tells you out loud which one is yours. On board, it buzzes when you're near your stop. It all runs on your phone, with no internet needed.
 
 > Built for **AppBuildersPH Hackathon 2026: Local AI** ("Build an AI product that remains genuinely useful when the cloud disappears").
 
@@ -9,7 +9,7 @@ ParaPo watches the street, reads the route signboards of approaching jeepneys, a
 
 ## Table of Contents
 
-- [Why ParaPo](#why-parapo)
+- [Why SakayKita](#why-SakayKita)
 - [What it does](#what-it-does)
 - [Why the AI has to run on the phone](#why-the-ai-has-to-run-on-the-phone)
 - [How it works](#how-it-works)
@@ -26,7 +26,7 @@ ParaPo watches the street, reads the route signboards of approaching jeepneys, a
 
 ---
 
-## Why ParaPo
+## Why SakayKita
 
 To ride a jeepney, you first have to flag it down, and to flag it down, you have to know it's the right one. Jeepneys have no fixed stops, and their routes are shown only on **visual signboards**. For a blind or low-vision commuter, that means relying on strangers, guessing, or waiting.
 
@@ -36,20 +36,20 @@ To ride a jeepney, you first have to flag it down, and to flag it down, you have
 
 Getting off is the second problem: knowing when you've reached your stop when you can't see the landmarks outside.
 
-"Para po!" is what Filipino commuters say to stop a jeep. ParaPo helps with both moments: **getting on the right jeep, and getting off at the right place.**
+"Para po!" is what Filipino commuters say to stop a jeep. SakayKita helps with both moments: **getting on the right jeep, and getting off at the right place.**
 
 ## What it does
 
 ### 1. Jeepney route reader ("Is this my jeep?")
 - Point the phone's camera toward the street (hand-held, lanyard, or chest mount).
-- ParaPo detects approaching jeepneys, reads the **route signboard**, and matches it against a list of known routes.
+- SakayKita detects approaching jeepneys, reads the **route signboard**, and matches it against a list of known routes.
 - It speaks the result: *"Philcoa jeep, approaching. This is your route."*
 - If you've set a destination, it only announces **matching** jeeps, so you're not flooded with every vehicle that passes.
 - When it's unsure, it says so (*"Jeep approaching, route unclear"*) instead of guessing.
 
 ### 2. Stop alert ("Tell me when I'm near")
 - Say or type your destination once (e.g., *"Philcoa"*).
-- During the ride, ParaPo tracks your location using the phone's GPS. GPS does **not** need mobile data.
+- During the ride, SakayKita tracks your location using the phone's GPS. GPS does **not** need mobile data.
 - As you approach your stop, the phone **vibrates and plays a sound**: an early "get ready" alert, then an "arriving now" alert, so you have time to say *"Para po."*
 
 ## Why the AI has to run on the phone
@@ -57,7 +57,7 @@ Getting off is the second problem: knowing when you've reached your stop when yo
 | Reason | Why it matters for this user |
 |---|---|
 | **Speed** | A jeepney passes in seconds. The alert is only useful *before* it passes, and a cloud round trip on roadside mobile data is too slow and unreliable. |
-| **No data needed** | Many users are on prepaid plans or have weak signal. ParaPo works in airplane mode. |
+| **No data needed** | Many users are on prepaid plans or have weak signal. SakayKita works in airplane mode. |
 | **Privacy** | The camera continuously sees the street, other people, and plate numbers. That video never leaves the device. |
 | **Cost** | No per-request API fees, so the app can stay free for the people who need it. |
 
@@ -95,7 +95,7 @@ GPS location ──► offline geofence around the stop ──► "get ready" / 
 3. Never announce a confident **wrong** match. When unsure, say "unclear."
 
 ### Non-goals (for now)
-- **Replacing the white cane or mobility training.** ParaPo is an aid, not a navigator.
+- **Replacing the white cane or mobility training.** SakayKita is an aid, not a navigator.
 - **Obstacle or traffic-danger detection.** Safety-critical; out of scope.
 - **All jeepney routes nationwide.** We start with one corridor (e.g., Commonwealth Avenue).
 - **Live jeepney tracking or arrival times.** Requires infrastructure most jeepneys don't have.
@@ -103,7 +103,7 @@ GPS location ──► offline geofence around the stop ──► "get ready" / 
 
 ### User stories
 - As a **blind commuter waiting at the roadside**, I want to hear which jeep is approaching so that I can flag down the right one without asking strangers.
-- As a **low-vision commuter**, I want ParaPo to stay quiet about jeeps that aren't mine so that I'm not overwhelmed by announcements in traffic.
+- As a **low-vision commuter**, I want SakayKita to stay quiet about jeeps that aren't mine so that I'm not overwhelmed by announcements in traffic.
 - As a **rider already on board**, I want my phone to vibrate before my stop so that I have time to say "Para po" and get off safely.
 - As a **commuter with no mobile data**, I want everything to work offline so that I can use it anywhere, anytime.
 
@@ -151,8 +151,8 @@ GPS location ──► offline geofence around the stop ──► "get ready" / 
 
 ```bash
 # 1. Clone
-git clone https://github.com/<your-org>/parapo.git
-cd parapo
+git clone https://github.com/<your-org>/SakayKita.git
+cd SakayKita
 
 # 2. Install dependencies
 npm install
@@ -172,7 +172,7 @@ Then:
 ### Project structure (planned)
 
 ```
-parapo/
+SakayKita/
 ├── public/
 │   ├── models/          # ONNX detection + OCR models (cached offline)
 │   ├── audio/           # pre-recorded route-name clips (TTS fallback)
@@ -209,15 +209,15 @@ Add an entry to `data/routes.json`:
 1. Turn on **airplane mode** and show it on screen.
 2. Set the destination by voice: *"Philcoa."*
 3. Teammates walk past the camera holding printed jeepney signboards (or play street video on a laptop).
-   - A non-matching jeep passes: ParaPo stays quiet, or gives a short "not yours."
+   - A non-matching jeep passes: SakayKita stays quiet, or gives a short "not yours."
    - The matching jeep passes: *"Philcoa jeep, approaching. This is your route."*, plus vibration.
 4. Show the **"route unclear"** behavior with a partly covered sign.
 5. Switch to ride mode with a simulated GPS track: the phone buzzes with *"Get ready, Philcoa is next,"* then *"Arriving now."*
 
 ## Safety and limitations
 
-- **ParaPo supports the white cane. It never replaces it.** It does not detect obstacles, traffic, or danger.
-- OCR on moving vehicles can fail in rain, at night, at odd angles, or with hand-painted signs. When confidence is low, ParaPo says so instead of guessing.
+- **SakayKita supports the white cane. It never replaces it.** It does not detect obstacles, traffic, or danger.
+- OCR on moving vehicles can fail in rain, at night, at odd angles, or with hand-painted signs. When confidence is low, SakayKita says so instead of guessing.
 - Route and stop data cover **one corridor** in this version.
 - GPS accuracy varies in dense areas and inside vehicles, so stop alerts include an early warning, not just a final one.
 - This is a **hackathon prototype**. It has not yet been tested with blind and low-vision users, and that is our first next step.
