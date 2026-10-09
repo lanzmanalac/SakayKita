@@ -1,23 +1,27 @@
 # SakayKita 🚍
 
 **An offline, on-device AI commute companion for blind and low-vision Filipino commuters.**
-SakayKita watches the street, reads the route signboards of approaching jeepneys, and tells you out loud which one is yours. On board, it buzzes when you're near your stop. It all runs on your phone, with no internet needed.
+You choose your commute. SakayKita watches the street, reads the route signboards of approaching jeepneys, ignores the ones that aren't yours, and tells you out loud when your jeep is coming, early enough to flag it down. It all runs on the phone, with no internet needed.
 
 > Built for **AppBuildersPH Hackathon 2026: Local AI** ("Build an AI product that remains genuinely useful when the cloud disappears").
+> **Status: hackathon prototype.** Not yet tested with blind or low-vision users.
 
 ---
 
 ## Table of Contents
 
-- [Why SakayKita](#why-SakayKita)
+- [Why SakayKita](#why-sakaykita)
 - [What it does](#what-it-does)
+- [What's different from existing tools](#whats-different-from-existing-tools)
 - [Why the AI has to run on the phone](#why-the-ai-has-to-run-on-the-phone)
 - [How it works](#how-it-works)
 - [Scope](#scope)
+- [How we measure it](#how-we-measure-it)
 - [Tech stack](#tech-stack)
 - [Getting started](#getting-started)
-- [Demo script](#demo-script)
-- [Safety and limitations](#safety-and-limitations)
+- [Pre-demo test checklist](#pre-demo-test-checklist)
+- [Demo plan](#demo-plan)
+- [Known limitations](#known-limitations)
 - [Roadmap](#roadmap)
 - [Disclosures (hackathon rules)](#disclosures-hackathon-rules)
 - [References](#references)
@@ -28,38 +32,54 @@ SakayKita watches the street, reads the route signboards of approaching jeepneys
 
 ## Why SakayKita
 
-To ride a jeepney, you first have to flag it down, and to flag it down, you have to know it's the right one. Jeepneys have no fixed stops, and their routes are shown only on **visual signboards**. For a blind or low-vision commuter, that means relying on strangers, guessing, or waiting.
+To ride a jeepney, you first have to flag it down, and to flag it down you have to know it's the right one. Jeepneys have no fixed stops, and their routes are shown only on **visual signboards**.
 
 - An ABS-CBN News series followed visually impaired workers commuting along Commonwealth Avenue. One was nearly hit by a motorcycle while waiting for a jeepney, and it took them about **half an hour** to hail one. She described having to ask strangers for help to get a ride.
 - In US research on blind and vision-impaired transit users, **70%** said finding where to board a bus was "somewhat difficult" or harder, and those are fixed-stop buses.
 - A Philippine study cites roughly **272,000 visually impaired Filipinos**.
 
-Getting off is the second problem: knowing when you've reached your stop when you can't see the landmarks outside.
-
-"Para po!" is what Filipino commuters say to stop a jeep. SakayKita helps with both moments: **getting on the right jeep, and getting off at the right place.**
+"Sakay" is Filipino for "ride." SakayKita helps you get on the right one.
 
 ## What it does
 
-### 1. Jeepney route reader ("Is this my jeep?")
-- Point the phone's camera toward the street (hand-held, lanyard, or chest mount).
-- SakayKita detects approaching jeepneys, reads the **route signboard**, and matches it against a list of known routes.
-- It speaks the result: *"Philcoa jeep, approaching. This is your route."*
-- If you've set a destination, it only announces **matching** jeeps, so you're not flooded with every vehicle that passes.
-- When it's unsure, it says so (*"Jeep approaching, route unclear"*) instead of guessing.
+### Core: "Is my jeep coming?"
+1. **Choose your commute** without looking at the screen: a boarding spot, a direction, and your route (from 3–5 verified routes for that spot).
+2. **Start scanning.** SakayKita confirms out loud that the camera is working and keeps a soft periodic tick so you know it's still scanning.
+3. When a jeepney on **your** route approaches, SakayKita announces it (*"Philcoa jeep, approaching"*) with a distinct tone.
+4. Jeeps on other routes are ignored, or get a short low tone if you turn that on.
+5. If SakayKita can't read a sign clearly, it says *"Jeep approaching, unclear"* instead of guessing.
+6. **Repeat** the last announcement anytime with one large gesture.
 
-### 2. Stop alert ("Tell me when I'm near")
-- Say or type your destination once (e.g., *"Philcoa"*).
-- During the ride, SakayKita tracks your location using the phone's GPS. GPS does **not** need mobile data.
-- As you approach your stop, the phone **vibrates and plays a sound**: an early "get ready" alert, then an "arriving now" alert, so you have time to say *"Para po."*
+### Optional (only if it passes on-phone testing): stop alert
+Once on board, SakayKita uses GPS to alert you as you near your stop. Haptics work on phones only. See [Known limitations](#known-limitations) for the screen-on requirement.
+
+## What's different from existing tools
+
+Reading signs is **not** new. Google Lookout already reads text and identifies objects for blind and low-vision users, and published research covers bus-route recognition. We don't claim sign reading as our innovation.
+
+SakayKita's difference is the **decisions** around reading:
+
+| | General reader (e.g., Lookout) | SakayKita |
+|---|---|---|
+| What it reads | Any text in view (ads, plates, stickers) | Only jeepney route signboards |
+| What it says | The raw text | "This is your jeep" / "unclear" / silence |
+| Commute context | None | Knows your boarding spot, direction, and route |
+| Local route knowledge | None | Verified routes for a specific boarding area |
+| Refusing to guess | Not applicable | Says "unclear" rather than risk a wrong alert |
+| Timing | On demand | Designed to alert **before** the jeep passes |
+
+In the demo, we show these decisions, **including when SakayKita refuses to guess.**
 
 ## Why the AI has to run on the phone
 
-| Reason | Why it matters for this user |
+| Reason | Why it matters |
 |---|---|
-| **Speed** | A jeepney passes in seconds. The alert is only useful *before* it passes, and a cloud round trip on roadside mobile data is too slow and unreliable. |
-| **No data needed** | Many users are on prepaid plans or have weak signal. SakayKita works in airplane mode. |
+| **Timing** | At 30 km/h a vehicle covers 15 metres in about 1.8 seconds. Reading, deciding, speaking and the user reacting must all fit before it passes, so there's no room for a cloud round trip on roadside mobile data. |
+| **No data needed** | Works in airplane mode, for users on prepaid plans or with weak signal. |
 | **Privacy** | The camera continuously sees the street, other people, and plate numbers. That video never leaves the device. |
-| **Cost** | No per-request API fees, so the app can stay free for the people who need it. |
+| **Cost** | No per-request API fees, so it can stay free. |
+
+On-device text recognition plus route matching is the Local AI core. **No language model is needed** in the main pipeline.
 
 ## How it works
 
@@ -67,168 +87,198 @@ Getting off is the second problem: knowing when you've reached your stop when yo
 Camera frames
      │
      ▼
-[1] Vehicle detection ── is a jeepney in view? (on-device object detection)
+[1] Vehicle detection ── jeepney-like vehicle in view?  (on-device object detection)
+     │   └─ FAIL-OPEN: if nothing is detected, still OCR a fixed region
+     ▼      (the area where signboards appear from the boarding spot)
+[2] Signboard text reading ── on-device OCR on the crop / region
      │
      ▼
-[2] Signboard text reading ── read the route text on the placard (on-device OCR)
+[3] Route matching ── fuzzy-match text to the 3–5 verified routes for this
+     │                 boarding spot + direction, with a confidence score
+     ▼
+[4] Agreement check ── require the same route across several consecutive frames;
+     │                 reject readings that are ambiguous between two routes
+     ▼
+[5] Decision ── YOUR ROUTE / OTHER ROUTE / UNCLEAR
      │
      ▼
-[3] Route matching ── fuzzy-match the text against a known route list
-     │                 (e.g., "CUB_O" → "Cubao"), with a confidence score
-     ▼
-[4] Decision ── does it match the user's destination? Is confidence high enough?
-     │
-     ▼
-[5] Feedback ── speech (Filipino/English) + vibration
-
-Destination (voice/text) ──► on-device speech recognition ──► match to stop list
-GPS location ──► offline geofence around the stop ──► "get ready" / "arriving" alerts
+[6] Feedback ── spoken announcement + distinct tones (+ vibration on phones)
+                + large high-contrast visual cue
 ```
 
-**Why route matching instead of free-form reading:** jeepney signboards are cluttered, and text on a moving vehicle is often blurry or partly hidden. Matching the noisy reading against a fixed list of route names makes the system far more tolerant of errors. Published work on bus-route recognition for visually impaired users uses the same idea, correcting OCR results against a predefined route list with edit distance.
+**Why fail-open:** if detection is the gate and the detector misses a jeepney (they are not a standard object-detection class), OCR never runs and the whole pipeline goes silent. Fail-open keeps the reader running. The route-list match plus multi-frame agreement then filters out stray text such as ads or other signage, so fail-open doesn't turn into false alerts.
+
+**Why a route list, not free reading:** signboards are cluttered and text on a moving vehicle is blurry or partly hidden. Matching a noisy reading against a small verified list is far more robust. Published bus-route recognition work uses the same idea (OCR plus route-list correction).
+
+**Direction matters:** a sign containing "Philcoa" doesn't prove the jeep is going *your* way from *where you are*. So routes are tied to a specific boarding spot and direction, not matched on a single word.
 
 ## Scope
 
-### Goals for the hackathon MVP
-1. Correctly announce matching jeepneys from a **fixed corridor route list** in a live demo, with the network fully disabled.
-2. Give an audible and vibration "near your stop" alert from GPS, offline.
-3. Never announce a confident **wrong** match. When unsure, say "unclear."
+### MVP goals
+1. At **one boarding location, one direction, with 3–5 verified routes**, announce the user's route early enough to act on, on the actual demo phone, fully offline.
+2. Prefer "unclear" over a wrong alert, and **report wrong alerts honestly** (see [How we measure it](#how-we-measure-it)).
+3. The whole core flow can be completed **without looking at the screen**.
 
 ### Non-goals (for now)
 - **Replacing the white cane or mobility training.** SakayKita is an aid, not a navigator.
 - **Obstacle or traffic-danger detection.** Safety-critical; out of scope.
-- **All jeepney routes nationwide.** We start with one corridor (e.g., Commonwealth Avenue).
-- **Live jeepney tracking or arrival times.** Requires infrastructure most jeepneys don't have.
-- **Buses, UV Express, tricycles.** Possible later, using the same pipeline.
+- **Voice input for the destination.** Postponed: small on-device speech models are likely to garble Filipino place names such as "Philcoa."
+- **Multiple corridors or nationwide routes.** One boarding location first.
+- **Custom model training.** Postponed until we've tested off-the-shelf detection and OCR on real footage.
+- **Language models.** Not needed for the core flow.
 
 ### User stories
-- As a **blind commuter waiting at the roadside**, I want to hear which jeep is approaching so that I can flag down the right one without asking strangers.
-- As a **low-vision commuter**, I want SakayKita to stay quiet about jeeps that aren't mine so that I'm not overwhelmed by announcements in traffic.
-- As a **rider already on board**, I want my phone to vibrate before my stop so that I have time to say "Para po" and get off safely.
-- As a **commuter with no mobile data**, I want everything to work offline so that I can use it anywhere, anytime.
+- As a **blind commuter at my usual boarding spot**, I want to hear when my jeep is approaching, early enough to flag it, so that I don't have to ask strangers.
+- As a **low-vision commuter**, I want SakayKita to stay quiet about jeeps that aren't mine so that I'm not overwhelmed in traffic.
+- As a **screen-reader user**, I want to set up my commute and start scanning entirely with TalkBack so that I never need to see the screen.
+- As a **user holding the phone**, I want to know whether the camera is actually aimed at the street so that I can trust silence.
 
 ### Requirements
 
 **P0: must have for the demo**
-- [ ] On-device jeepney detection from the camera feed
-- [ ] On-device OCR of the signboard region
-- [ ] Fuzzy matching against a bundled route list, with a confidence threshold
-- [ ] Spoken announcement plus vibration on a match
-- [ ] "Route unclear" fallback below the confidence threshold
-- [ ] Destination entry (text or voice) matched to a bundled stop list
-- [ ] Offline GPS geofence alert near the chosen stop
+- [ ] **Accessible setup with TalkBack:** choose boarding spot → direction → route, start/stop scanning, all with large targets and spoken labels
+- [ ] **Scanning status by audio:** spoken "scanning started," periodic tick while running, and a spoken warning if the camera sees no street or road (e.g., aimed at the ground or sky)
+- [ ] **Camera positioning guidance:** a spoken setup step plus a recommended mount (lanyard or chest strap, rear camera facing the road)
+- [ ] On-device detection, with **fail-open** to a fixed OCR region
+- [ ] On-device OCR
+- [ ] Route matching against the verified list for the chosen spot and direction, with multi-frame agreement and rejection of ambiguous readings
+- [ ] Three outcomes with distinct audio: **your route / other route / unclear**
+- [ ] **Repeat last announcement** with one large gesture
+- [ ] Audio + large visual cue for every alert (haptics as a phone-only extra)
 - [ ] Works fully in airplane mode after first load
+- [ ] Runs on WebGPU **and** falls back to WASM
 
 **P1: nice to have**
-- [ ] Saved "My routes" (e.g., home ↔ work)
-- [ ] Filipino and English voice options
-- [ ] Large-button, screen-reader-friendly UI (TalkBack-tested)
-- [ ] Repeat-last-announcement gesture
+- [ ] Stop alert via GPS (only if it passes on-phone testing; see limitations)
+- [ ] Saved commutes (e.g., home → work)
+- [ ] Filipino and English voices
+- [ ] Voice destination input
 
 **P2: future**
-- [ ] More corridors and route packs (downloadable)
+- [ ] More boarding locations and route packs
 - [ ] Buses and UV Express
-- [ ] Wearable/earbud-only mode
+- [ ] Earbud-first, hands-free mode
+- [ ] Custom jeepney detection model
+
+## How we measure it
+
+We report each outcome **separately**. An app that always says "unclear" could have zero wrong alerts and still be useless, so no single number tells the story.
+
+For each test pass (recorded footage and live camera), we count:
+
+| Metric | Definition |
+|---|---|
+| **Correct alerts** | Announced "your route" and it was your route |
+| **Wrong alerts** | Announced "your route" but it wasn't |
+| **Missed vehicles** | Your route passed and SakayKita said nothing or "unclear" |
+| **Unclear results** | Said "unclear" (for any vehicle) |
+| **Lead time** | Seconds between the "your route" announcement and the jeep passing the user, measured on the actual phone |
+
+We will only publish numbers we have measured, along with how many vehicles were in the test.
 
 ## Tech stack
 
-> **Proposed** stack, chosen because the team is web-first. Update this as you build.
+> **Proposed** stack (web-first team). Items marked 🔬 must pass the [pre-demo tests](#pre-demo-test-checklist) before we rely on them.
 
 | Layer | Choice | Notes |
 |---|---|---|
-| App shell | **Progressive Web App** (installable, offline via service worker) | Android Chrome as the primary target |
-| Vehicle detection | Small object-detection model (e.g., YOLO-family, ONNX) via **ONNX Runtime Web / Transformers.js** on **WebGPU/WASM** | Generic "bus/truck" classes as a starting proxy; fine-tune on jeepney photos if time allows |
-| OCR | On-device OCR (e.g., **PaddleOCR via ONNX** or **Tesseract.js**) on the cropped signboard | Run only on detected vehicle crops to save compute |
-| Route matching | Fuzzy string matching (Levenshtein / token similarity) against `routes.json` | Deterministic and fast; no LLM needed in the hot path |
-| Destination input | On-device speech-to-text (e.g., **Whisper tiny** via Transformers.js), with a typed fallback | Browser built-in speech recognition may use the cloud, so don't rely on it offline |
-| Speech output | Web Speech `speechSynthesis`, with **pre-recorded route-name audio** as fallback | Installed voices vary by device |
-| Haptics | Vibration API | Supported on Android Chrome, not on iOS Safari |
-| Location | Geolocation API + bundled stop coordinates (`stops.geojson`) | GPS works without data; the first fix can be slower offline |
+| App shell | **Progressive Web App** (installable, offline via service worker) | Android Chrome is the primary target |
+| Vehicle detection 🔬 | Small COCO-trained detector (e.g., YOLO-family, ONNX) via **ONNX Runtime Web** | Jeepneys are **not** a COCO class. We test whether `bus`/`truck` fire on jeepneys; if not, rely on fail-open OCR |
+| OCR 🔬 | On-device OCR (e.g., **PaddleOCR via ONNX** or **Tesseract.js**) | Run on detected crops or the fixed fail-open region |
+| Route matching | Fuzzy string matching (Levenshtein / token similarity) + multi-frame agreement | Deterministic and fast |
+| Inference backend 🔬 | WebGPU with **WASM fallback** | Venue laptops and phones may lack WebGPU |
+| Speech output | **Pre-recorded audio clips** for route names and outcomes, with Web Speech `speechSynthesis` as a backup | Bundled clips don't depend on installed voices |
+| Haptics | Vibration API | **Phone only.** Not available on desktop browsers or iOS Safari |
+| Screen-on | Screen Wake Lock API | Keeps scanning running while the screen is on |
+| Location (P1) 🔬 | Geolocation API + bundled stop coordinates | Only if background/locked-screen behavior is acceptable |
 
 ## Getting started
 
 > ⚠️ Placeholder commands. Replace them once the repo structure is final.
 
 ```bash
-# 1. Clone
-git clone https://github.com/<your-org>/SakayKita.git
-cd SakayKita
-
-# 2. Install dependencies
+git clone https://github.com/<your-org>/sakaykita.git
+cd sakaykita
 npm install
-
-# 3. Download model files into /public/models (see models/README.md)
-npm run fetch-models
-
-# 4. Run locally (HTTPS is needed for camera, GPS, and service workers)
-npm run dev
+npm run fetch-models   # downloads ONNX models into /public/models
+npm run dev            # HTTPS needed for camera, GPS, wake lock, service worker
 ```
 
-Then:
-1. Open the app on an Android phone in Chrome and **Install** it (Add to Home Screen).
-2. Open it once while online so models and route data are cached.
-3. Turn on **airplane mode**. Everything should keep working.
+1. Open on an Android phone in Chrome and **Install** (Add to Home Screen).
+2. Open once while online so models and route data are cached.
+3. Turn on **airplane mode**. Everything in the core flow should keep working.
 
-### Project structure (planned)
+### Adding a boarding spot and its routes
 
-```
-SakayKita/
-├── public/
-│   ├── models/          # ONNX detection + OCR models (cached offline)
-│   ├── audio/           # pre-recorded route-name clips (TTS fallback)
-│   └── manifest.json
-├── data/
-│   ├── routes.json      # corridor route names + aliases (e.g., "Cubao", "CUBAO", "Cubao Ali Mall")
-│   └── stops.geojson    # stop names + coordinates for the stop alert
-├── src/
-│   ├── detect/          # vehicle detection
-│   ├── ocr/             # signboard OCR
-│   ├── match/           # fuzzy route/stop matching + confidence
-│   ├── speech/          # speech-to-text + speech output
-│   ├── geo/             # GPS geofence + alerts
-│   └── ui/              # accessible UI
-└── sw.js                # service worker for offline use
-```
-
-### Adding a route
-
-Add an entry to `data/routes.json`:
+`data/spots.json`:
 
 ```json
 {
-  "id": "philcoa-quiapo",
-  "display": "Philcoa – Quiapo",
-  "aliases": ["PHILCOA", "QUIAPO", "PHILCOA QUIAPO", "QUIAPO PHILCOA"]
+  "id": "commonwealth-philcoa-southbound",
+  "name": "Commonwealth Ave near Philcoa, southbound",
+  "direction": "southbound",
+  "ocr_region": { "x": 0.1, "y": 0.15, "w": 0.8, "h": 0.35 },
+  "routes": [
+    {
+      "id": "philcoa-quiapo",
+      "display": "Philcoa – Quiapo",
+      "required_terms": ["QUIAPO"],
+      "aliases": ["PHILCOA QUIAPO", "QUIAPO"],
+      "verified": true
+    }
+  ]
 }
 ```
 
-## Demo script
+- `required_terms` is what must be read for a match, chosen so that this route can't be confused with the other routes **at this spot and direction**.
+- Only include routes the team has **verified in person** at that spot.
 
-**Live, about 90 seconds**
+## Pre-demo test checklist
 
-1. Turn on **airplane mode** and show it on screen.
-2. Set the destination by voice: *"Philcoa."*
-3. Teammates walk past the camera holding printed jeepney signboards (or play street video on a laptop).
-   - A non-matching jeep passes: SakayKita stays quiet, or gives a short "not yours."
-   - The matching jeep passes: *"Philcoa jeep, approaching. This is your route."*, plus vibration.
-4. Show the **"route unclear"** behavior with a partly covered sign.
-5. Switch to ride mode with a simulated GPS track: the phone buzzes with *"Get ready, Philcoa is next,"* then *"Arriving now."*
+Run these **in this order**. If step 1 fails, change the plan before building further.
 
-## Safety and limitations
+1. [ ] **Detector on jeepneys (do this first).** Run the COCO detector on 20+ real jeepney photos and video clips. Record whether `bus`, `truck`, or nothing fires. If it rarely fires, rely on fail-open OCR and say so in the pitch.
+2. [ ] **OCR on real signboards.** Same footage: can OCR read the route terms at all? At what distance?
+3. [ ] **Lead time on moving footage, on the actual phone.** Measure seconds between the announcement and the jeep passing. If it only works close up, narrow to a boarding area where jeeps slow down or stop.
+4. [ ] **WebGPU vs WASM.** Run on the actual demo phone and **every teammate's laptop tonight**, not tomorrow. Confirm the WASM fallback works.
+5. [ ] **Eyes-free run.** A teammate completes setup → scan → hear alert → repeat, **without looking at the screen**, using TalkBack. (A useful check, but not a substitute for testing with blind users.)
+6. [ ] **Airplane mode.** Full core flow with all networks off.
+7. [ ] **(P1) Stop alert with the screen locked or app in the background.** Chrome can suspend background pages. If the alert only works with the screen on, document that and keep it out of the main claim.
+
+## Demo plan
+
+The demo must prove the **full claim**, not just the reading step.
+
+1. **Airplane mode on**, shown on screen. The phone screen is mirrored to the projector (e.g., via `scrcpy`).
+2. **Eyes-free setup:** choose spot → direction → route using TalkBack, with audio on.
+3. **Recorded jeepney footage, clearly labelled as recorded,** played into the phone camera or the app's video input. Live inference runs on it. It includes:
+   - a **wrong-route** jeep → SakayKita stays quiet / low tone
+   - an **unclear** sign → "Jeep approaching, unclear"
+   - the **correct route** → "Philcoa jeep, approaching" + tone + big visual cue
+4. **Live camera example:** a printed signboard in front of the phone camera to show real-time reading. We say openly that a hand-held sign may not trigger the vehicle detector, which is why fail-open exists.
+5. **Show the measured results** (correct / wrong / missed / unclear / lead time) from our test footage.
+6. **(If kept) Stop alert:** a simulated GPS track, **clearly labelled as simulated**, plus a separate screen recording of a real offline GPS test.
+7. **Haptics:** say out loud that vibration is phone-only. On the projector, the alert appears as an audio countdown plus a large visual cue.
+
+## Known limitations
 
 - **SakayKita supports the white cane. It never replaces it.** It does not detect obstacles, traffic, or danger.
-- OCR on moving vehicles can fail in rain, at night, at odd angles, or with hand-painted signs. When confidence is low, SakayKita says so instead of guessing.
-- Route and stop data cover **one corridor** in this version.
-- GPS accuracy varies in dense areas and inside vehicles, so stop alerts include an early warning, not just a final one.
-- This is a **hackathon prototype**. It has not yet been tested with blind and low-vision users, and that is our first next step.
+- **Coverage:** one boarding location, one direction, 3–5 verified routes.
+- **Wrong alerts are possible.** We reduce them with route-list matching, multi-frame agreement, and rejecting ambiguous readings, and we report them. We do not claim zero.
+- **OCR conditions:** rain, night, glare, angles, and hand-painted signs reduce accuracy.
+- **Detection:** jeepneys are not a standard detection class. Detection may miss them, which is why the pipeline is fail-open.
+- **Haptics** are phone-only (not desktop browsers or iOS Safari).
+- **Background behavior:** Chrome can suspend background pages. Scanning (and any stop alert) requires the app open with the screen on (wake lock) unless testing shows otherwise.
+- **Not yet tested with blind or low-vision users.**
 
 ## Roadmap
 
 - [ ] Test with blind and low-vision commuters (via disability organizations and school student-services offices)
-- [ ] Build a labeled jeepney signboard photo set for one corridor
-- [ ] Measure and publish accuracy on that set (we will not claim numbers we haven't measured)
-- [ ] Downloadable route packs for more cities
-- [ ] Earbud-first, hands-free mode
+- [ ] Build a labelled signboard dataset for the first boarding location
+- [ ] Publish measured correct / wrong / missed / unclear rates and lead times
+- [ ] Add boarding locations, then route packs
+- [ ] Evaluate a custom jeepney detector
+- [ ] Re-evaluate voice input with a stronger on-device Filipino speech model
 
 ## Disclosures (hackathon rules)
 
@@ -236,32 +286,32 @@ Add an entry to `data/routes.json`:
 
 | Type | Name | Version / Source | Used for |
 |---|---|---|---|
-| Model | _e.g., YOLO-family detector (ONNX)_ | _link_ | Vehicle detection |
-| Model | _e.g., PaddleOCR / Tesseract.js_ | _link_ | Signboard OCR |
-| Model | _e.g., Whisper tiny_ | _link_ | Destination speech-to-text |
-| Framework | _e.g., ONNX Runtime Web / Transformers.js_ | _link_ | On-device inference |
-| API | Web Speech, Vibration, Geolocation | Browser built-in | Speech, haptics, location |
+| Model | _e.g., YOLO-family detector (ONNX)_ | _link + license_ | Vehicle detection |
+| Model | _e.g., PaddleOCR / Tesseract.js_ | _link + license_ | Signboard OCR |
+| Framework | _e.g., ONNX Runtime Web_ | _link_ | On-device inference |
+| API | Vibration, Wake Lock, Geolocation, Web Speech | Browser built-in | Haptics, screen-on, location, speech fallback |
+| Footage | _source of recorded jeepney video_ | _own recording / permission_ | Demo + testing |
 | AI coding tools | _list any (e.g., Claude, Copilot, Devin)_ | | Development assistance |
 | Pre-existing code/assets | _none / list_ | | |
 
-**Cloud usage:** none in the core flow. Any optional cloud feature must be listed here and must not be required for the app to work.
+**Cloud usage:** none in the core flow.
 
 ## References
 
 - ABS-CBN News: [How's your commute? A journey from the perspective of a visually impaired person](https://news.abs-cbn.com/spotlight/multimedia/slideshow/07/21/22/sidewalks-ped-xing-overpasses-commuting-from-the-perspective-of-a-blind-person) (2022)
 - Marston, J. (UCSB): [Research on barriers to transit for vision-impaired travelers](https://people.geog.ucsb.edu/~marstonj/DIS/CH1_1.html)
 - Bacalla et al.: [Braille signage wayfinding study, Cebu Normal University](https://www.jhe.cnu.edu.ph/ojs3/article/download/322/49) (cites ~272,527 visually impaired Filipinos)
-- [Bus route number and destination recognition for visually impaired individuals](https://api.crossref.org/works/10.3390%2FA18100616), *Algorithms* (MDPI): OCR with route-list correction
-- [Google Lookout overview](https://ixd.prattsi.org/2023/09/assistive-technology-google-lookout-assisted-vision/): a general-purpose reading app for comparison
+- [Bus route number and destination recognition for visually impaired individuals](https://api.crossref.org/works/10.3390%2FA18100616), *Algorithms* (MDPI)
+- [Google Lookout overview](https://ixd.prattsi.org/2023/09/assistive-technology-google-lookout-assisted-vision/)
 
 ## Team
 
 | Name | Role |
 |---|---|
-| _Name_ | _e.g., ML / on-device inference_ |
-| _Name_ | _e.g., Frontend / accessibility_ |
-| _Name_ | _e.g., Data (routes, stops, test set)_ |
-| _Name_ | _e.g., Pitch / user research_ |
+| _Name_ | _e.g., On-device inference (detection + OCR)_ |
+| _Name_ | _e.g., Accessibility + TalkBack flow_ |
+| _Name_ | _e.g., Route data, footage, measurements_ |
+| _Name_ | _e.g., Pitch + demo_ |
 
 ## License
 
